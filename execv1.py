@@ -81,6 +81,10 @@ x = tf.placeholder(dtype=tensor_rank.dtype,shape=tensor_rank.shape)
 pagerank = tf.sparse.sparse_dense_matmul(WM,x) + (1-damping_factor)/matrix_dimension
 convergence = tf.norm((pagerank - x),ord='euclidean')
 
+print("Here3")
+print()
+print(time.time()-start)
+
 init = tf.global_variables_initializer()
 with tf.Session() as sess:
     sess.run(init)
@@ -95,7 +99,9 @@ with tf.Session() as sess:
     print("Output")
     print(newrank)
 
-resu = sorted(newrank.tolist(),reverse=True)
+finalSortedList = newrank.flatten().tolist()
+nodeIds = np.argsort(finalSortedList)[::-1]
+'''resu = sorted(newrank.tolist(),reverse=True)
 nodeids = np.argsort(newrank.flatten().tolist())[::-1]
 
 print(resu)
@@ -108,4 +114,16 @@ for i in range(0,20):
 print("Bottom Ranks")
 print(f'NODE IDS\tRANK')
 for i in range(1,21):
-    print(f'{nodeids[-i]}\t\t{resu[-i][0]}')
+    print(f'{nodeids[-i]}\t\t{resu[-i][0]}')'''
+
+print("Top Ranks")
+print(f'NODE IDS\tRANK')
+for i in range(0,20):
+    print(f'{nodeIds[i]}\t\t{finalSortedList[nodeIds[i]]}')
+print("Bottom Ranks")
+print(f'NODE IDS\tRANK')
+for i in range(1,21):
+    print(f'{nodeIds[-i]}\t\t{finalSortedList[nodeIds[i]]}')
+print("Last")
+print()
+print(time.time()-start)
