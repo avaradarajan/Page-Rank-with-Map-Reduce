@@ -16,7 +16,7 @@ def createStructure(from_node,to_node):
         directed_graph[to_node] = set()
 
 
-with open('C://Users//anand//Documents//email.txt') as fp:
+with open('C://Users//anand//Documents//input.txt') as fp:
     for line in fp:
         edge_info = (line.strip().split(' '))
         from_node = int(edge_info[0])
@@ -59,11 +59,11 @@ rand_prob = np.multiply(np.ones([matrix_dimension,matrix_dimension]),(1-damping_
 #M is the weighted matrix. This has to be multiplied with rank matrix till convergence is met. Avoiding spider traps with damping factor
 M = np.add(np.multiply(A,damping_factor),rand_prob)
 
-print(M)
+#print(M)
 
 rank = np.multiply(np.ones([matrix_dimension,1]),1./matrix_dimension)
 
-print(rank)
+#print(rank)
 print()
 #WM weighted matrix
 WM = tf.placeholder(dtype=tf.float32,shape=(matrix_dimension,matrix_dimension))

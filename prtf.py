@@ -5,7 +5,9 @@ directed_graph = {}
 matrix_dimension = 0
 epsilon = 0.0001
 damping_factor = 0.85
-
+#get filename as arg
+#read from hdfs
+#top 20 node ids with rank
 def createStructure(from_node,to_node):
     #print(f'{from_node} {to_node}')
     if from_node not in outlinks.keys():
@@ -44,6 +46,11 @@ for i in range(0,matrix_dimension):
 
 A = np.array(A)
 
+dangling = np.sum(A,axis=0)
+ind = [i for i, e in enumerate(dangling) if e == 0]
+for column in ind:
+    A[:,column] = 1./matrix_dimension
+
 #print(A)
 
 #rand_prob creates the 1-d/N matrix which is the prob part when user randomly opens a page
@@ -52,7 +59,7 @@ rand_prob = np.multiply(np.ones([matrix_dimension,matrix_dimension]),(1-damping_
 #M is the weighted matrix. This has to be multiplied with rank matrix till convergence is met. Avoiding spider traps with damping factor
 M = np.add(np.multiply(A,damping_factor),rand_prob)
 
-print(M)
+#print(M)
 
 rank = np.multiply(np.ones([matrix_dimension,1]),1./matrix_dimension)
 

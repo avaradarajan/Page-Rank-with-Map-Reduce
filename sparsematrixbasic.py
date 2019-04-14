@@ -1,5 +1,7 @@
+from scipy.sparse import dok_matrix
 import numpy as np
 import tensorflow as tf
+
 outlinks = {}
 directed_graph = {}
 matrix_dimension = 0
@@ -27,37 +29,37 @@ with open('C://Users//anand//Documents//input.txt') as fp:
         elif to_node not in directed_graph[from_node]:
             directed_graph[from_node].add(to_node)
             outlinks[from_node]+=1
-    #for key, value in sorted(directed_graph.items()):
-    #    print(key, ":", value)
+    for key, value in sorted(directed_graph.items()):
+        print(key, ":", value)
     #print(sorted(outlinks.items()))
     matrix_dimension = len(directed_graph.keys())
     print(matrix_dimension)
 
 #Create the A matrix i.e. N X N matrix that has the 1/L information
-A = [[0 for i in range(matrix_dimension)] for j in range(matrix_dimension)]
+M = dok_matrix((matrix_dimension,matrix_dimension),dtype=np.float32)
 
 #Handling deadends
 for i in range(0,matrix_dimension):
     for j in range(0,matrix_dimension):
          if i+1 in directed_graph[j+1] and i+1 != j+1:
-             A[i][j] = 1./outlinks[j+1]
-
-A = np.array(A)
-
-#print(A)
-
-#rand_prob creates the 1-d/N matrix which is the prob part when user randomly opens a page
-rand_prob = np.multiply(np.ones([matrix_dimension,matrix_dimension]),(1-damping_factor)/matrix_dimension)
-
-#M is the weighted matrix. This has to be multiplied with rank matrix till convergence is met. Avoiding spider traps with damping factor
-M = np.add(np.multiply(A,damping_factor),rand_prob)
+             print(f'{i}{j}')
+             M[i,j] = 1./outlinks[j+1] * damping_factor
 
 print(M)
+coo = M.tocoo()
+indices = np.mat([coo.row, coo.col]).transpose()
+Mtf = tf.SparseTensor(indices, coo.data, coo.shape)
 
-rank = np.multiply(np.ones([matrix_dimension,1]),1./matrix_dimension)
+print(Mtf)
+init_rank = np.multiply(np.ones([matrix_dimension,1]),1./matrix_dimension)
+tensor_rank = tf.convert_to_tensor(init_rank,dtype=tf.float32)
+print(tensor_rank)
+Mdash = tf.sparse.sparse_dense_matmul(Mtf,tensor_rank) + (1-damping_factor)/matrix_dimension
+#Mdash = M.dot(init_rank) + (1-damping_factor)/matrix_dimension
+#
+print(Mdash)
 
-#print(rank)
-#print()
+print()
 #WM weighted matrix
 WM = tf.placeholder(dtype=tf.float32,shape=(matrix_dimension,matrix_dimension))
 x = tf.placeholder(dtype=tf.float32,shape=(matrix_dimension,1))
@@ -67,10 +69,5 @@ convergence = tf.norm((pagerank - x),ord='euclidean')
 init = tf.global_variables_initializer()
 with tf.Session() as sess:
     sess.run(init)
-    objective_func = float('inf')
-    while(objective_func > epsilon):
-        newrank = sess.run(pagerank,feed_dict={WM:M,x:rank})
-        objective_func = sess.run(convergence,feed_dict={pagerank:newrank,x:rank})
-        rank = newrank
-    print(newrank)
-    #print(list(sorted(newrank,reverse=True)))
+    ans = sess.run(Mdash)
+    print(ans)
